@@ -28,7 +28,6 @@ int main() {
     gettimeofday(&stop,NULL);
     double diff = stop.tv_sec - start.tv_sec
             + 1e-6*(stop.tv_usec - start.tv_usec);
-    printf("%0.6f\n",diff);
 }
 
 
