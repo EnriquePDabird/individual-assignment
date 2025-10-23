@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <fstream>
 #include <windows.h>
 #include <psapi.h>
 
@@ -48,11 +49,21 @@ ResourceUsage get_usage() {
 
 int main() {
     std::vector<int> sizes = {128, 256, 512, 768, 1024};
+    const int repetitions = 5;
+
+    std::string output_path = "C:\\Users\\USUARIO\\Desktop\\COLEGIO\\Curso 3\\Primer Semestre\\Big Data\\individual-assignment\\RESULTADOS\\CResultados.txt";
+    std::ofstream outfile(output_path);
+
+    if (!outfile.is_open()) {
+        std::cerr << "Error: no se pudo abrir el archivo de salida en " << output_path << std::endl;
+        return 1;
+    }
 
     std::cout << "Benchmarking C matrix multiplication program (Windows):\n";
     std::cout << "---------------------------------------------------------------------\n";
     std::cout << std::left
               << std::setw(8)  << "Size"
+              << std::setw(8)  << "Run"
               << std::setw(12) << "Time(s)"
               << std::setw(15) << "CPU_user(s)"
               << std::setw(15) << "CPU_sys(s)"
@@ -60,19 +71,45 @@ int main() {
               << "\n";
     std::cout << "---------------------------------------------------------------------\n";
 
-    for (int n : sizes) {
-        double exec_time = run_matrix_program(n);
-        auto usage = get_usage();
-        double mem_mb = usage.memory_bytes / (1024.0 * 1024.0);
+    outfile << "Benchmarking C matrix multiplication program (Windows):\n";
+    outfile << "---------------------------------------------------------------------\n";
+    outfile << std::left
+            << std::setw(8)  << "Size"
+            << std::setw(8)  << "Run"
+            << std::setw(12) << "Time(s)"
+            << std::setw(15) << "CPU_user(s)"
+            << std::setw(15) << "CPU_sys(s)"
+            << std::setw(12) << "Memory(MB)"
+            << "\n";
+    outfile << "---------------------------------------------------------------------\n";
 
-        std::cout << std::left << std::fixed << std::setprecision(6)
-                  << std::setw(8)  << n
-                  << std::setw(12) << exec_time
-                  << std::setw(15) << usage.user_cpu_sec
-                  << std::setw(15) << usage.sys_cpu_sec
-                  << std::setw(12) << mem_mb
-                  << "\n";
+    for (int n : sizes) {
+        for (int run = 1; run <= repetitions; ++run) {
+            double exec_time = run_matrix_program(n);
+            auto usage = get_usage();
+            double mem_mb = usage.memory_bytes / (1024.0 * 1024.0);
+
+            std::cout << std::left << std::fixed << std::setprecision(6)
+                      << std::setw(8)  << n
+                      << std::setw(8)  << run
+                      << std::setw(12) << exec_time
+                      << std::setw(15) << usage.user_cpu_sec
+                      << std::setw(15) << usage.sys_cpu_sec
+                      << std::setw(12) << mem_mb
+                      << "\n";
+
+            outfile << std::left << std::fixed << std::setprecision(6)
+                    << std::setw(8)  << n
+                    << std::setw(8)  << run
+                    << std::setw(12) << exec_time
+                    << std::setw(15) << usage.user_cpu_sec
+                    << std::setw(15) << usage.sys_cpu_sec
+                    << std::setw(12) << mem_mb
+                    << "\n";
+        }
     }
 
+    outfile.close();
+    std::cout << "\nResultados guardados en: " << output_path << std::endl;
     return 0;
 }
